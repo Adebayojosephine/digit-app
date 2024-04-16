@@ -76,8 +76,6 @@ def full_app():
     stroke_color = st.sidebar.color_picker("Stroke color hex: ")
     bg_color = st.sidebar.color_picker("Background color hex: ", "#eee")
     bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
-    # removing realtime update checkbox
-    # realtime_update = st.sidebar.checkbox("Update in realtime", True)
 
     # Create a canvas component
     canvas_result = st_canvas(
@@ -94,18 +92,43 @@ def full_app():
         display_toolbar=st.sidebar.checkbox("Display toolbar", True),
         key="full_app",
     )
+<<<<<<< HEAD
     return canvas_result
+=======
 
-    # Do something interesting with the image data and paths
-    # if canvas_result.image_data is not None:
-        # linearNet.load_state_dict(torch.load('LinearpyTeen30epocs.pth'))
-        
+    if st.button(label="AI Guess \U0001F914", type = "primary"):
+        ConvoNet.load_state_dict(torch.load('pyTeenConvo9882.pth'))
+        # st.image(canvas_result.image_data)
+        cv.imwrite("canvas.png",  canvas_result.image_data)
 
-    # if canvas_result.json_data is not None:
-    #     objects = pd.json_normalize(canvas_result.json_data["objects"])
-    #     for col in objects.select_dtypes(include=["object"]).columns:
-    #         objects[col] = objects[col].astype("str")
-    #     st.dataframe(objects)
+        # this section of the code does the image manipulation
+        # before passing it to our NN for guessing
+        img = cv.imread("canvas.png",cv.IMREAD_GRAYSCALE)
+        scaling = cv.resize(img,(28,28))
+        my_img_processed = cv.bitwise_not(scaling) # inverting image (background needs to be black)
+        cv.imwrite('new.png',my_img_processed)
+        new_img = Image.open("new.png")
+        # st.image(new_img)
+        # my_img_transform = transforms.Compose([transforms.Resize((28,28)),transforms.ToTensor()])
+        input_img = SimpleConvoModel.my_transform(my_img_processed).unsqueeze(0)
+        guessed_digit = ConvoNet.predict(input_img)
+        ans = str(guessed_digit.item())
+        st.subheader(f"The AI guessed that it was a {ans}\n")
+>>>>>>> upstream/main
+
+
+    st.markdown(""" 
+
+**Was the AI spot on?**
+(Uncheck the box after you give the feedback)
+                     
+                """)
+    
+    user_feedback_Y = st.checkbox("Hell Yeah!",key="checkYes")
+    user_feedback_N = st.checkbox("It still needs work!",key="checkNO")
+
+    if user_feedback_Y:
+        st.balloons()
 
 
 if __name__ == "__main__":
